@@ -1,0 +1,15 @@
+{
+    "Enabled": true,
+    "OpacityDay": 1.0,
+    "OpacityNight": 1.0,
+    "OpacityInterior": 1.0,
+    "IntensityDay": 1.0,
+    "IntensityNight": 1.0,
+    "IntensityInterior": 1.0,
+    "ParticleIntensityDay": 1.0,
+    "ParticleIntensityNight": 1.0,
+    "ParticleIntensityInterior": 1.0,
+    "FireIntensityDay": 1.0,
+    "FireIntensityNight": 1.0,
+    "FireIntensityInterior": 1.0
+}

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <shared_mutex>
+
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -18,9 +20,10 @@ public:
 	}
 
 	std::set<RE::TESEffectShader*> fireFX;
-	void GetFireFXForms();
+	void                           GetFireFXForms();
 
-	json JSONSettings;
+	std::shared_mutex fileLock;
+
 	bool Enabled;
 
 	float OpacityDay;
@@ -50,7 +53,7 @@ public:
 	void SaveJSON();
 
 	RE::NiColorA mult(RE::NiColorA a_color, float a_multiplier);
-	void UpdateEffect(RE::ShaderReferenceEffect* a_effect);
+	void         UpdateEffect(RE::ShaderReferenceEffect* a_effect);
 
 	float GetENBParameterFloat(const char* a_filename, const char* a_category, const char* a_keyname);
 	bool  GetENBParameterBool(const char* a_filename, const char* a_category, const char* a_keyname);

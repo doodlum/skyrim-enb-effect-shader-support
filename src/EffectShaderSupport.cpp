@@ -3,9 +3,11 @@
 #include "API/ENBSeriesAPI.h"
 extern ENB_API::ENBSDKALT1001* g_ENB;
 
+#include "SimpleIni.h"
+
 void EffectShaderSupport::GetFireFXForms()
 {
-	std::ifstream i(L"Data\\SKSE\\Plugins\\ENBEffectShaderSupport\\formregistry.json");
+	std::ifstream i(L"Data\\SKSE\\Plugins\\ENBEffectShaderSupport.json");
 	json          formregistry;
 	i >> formregistry;
 	fireFX.clear();
@@ -18,51 +20,77 @@ void EffectShaderSupport::GetFireFXForms()
 	}
 }
 
+#define GetSettingBool(a_setting) ini.GetBoolValue("EFFECTSHADERS", a_setting, true);
+#define GetSettingFloat(a_setting) (float)ini.GetDoubleValue("EFFECTSHADERS", a_setting, 1.0f);
+#define SetSettingBool(a_value, a_setting) ini.SetBoolValue("EFFECTSHADERS", a_setting, a_value);
+#define SetSettingFloat(a_value, a_setting) ini.SetDoubleValue("EFFECTSHADERS", a_setting, a_value);
+
 void EffectShaderSupport::LoadJSON()
 {
-	std::ifstream i(L"Data\\SKSE\\Plugins\\ENBEffectShaderSupport\\enbconfig.json");
-	i >> JSONSettings;
-	Enabled = JSONSettings["Enabled"];
+	std::lock_guard<std::shared_mutex> lk(fileLock);
 
-	OpacityDay = JSONSettings["OpacityDay"];
-	OpacityNight = JSONSettings["OpacityNight"];
-	OpacityInterior = JSONSettings["OpacityInterior"];
+	CSimpleIniA ini;
+	ini.SetUnicode();
+	SI_Error    rc = ini.LoadFile(L"enbseries\\enbeffectshaders.ini");
+	if (rc < 0) {
+		Enabled = true;
+		OpacityDay = 1.0f;
+		OpacityNight = 1.0f;
+		OpacityInterior = 1.0f;
+		IntensityDay = 1.0f;
+		IntensityNight = 1.0f;
+		IntensityInterior = 1.0f;
+		ParticleIntensityDay = 1.0f;
+		ParticleIntensityNight = 1.0f;
+		ParticleIntensityInterior = 1.0f;
+		ParticleIntensityNight = 1.0f;
+		FireIntensityDay = 1.0f;
+		FireIntensityNight = 1.0f;
+		FireIntensityInterior = 1.0f;
+		return;
+	}
 
-	IntensityDay = JSONSettings["IntensityDay"];
-	IntensityNight = JSONSettings["IntensityNight"];
-	IntensityInterior = JSONSettings["IntensityInterior"];
+	Enabled = GetSettingBool("Enabled");
 
-	ParticleIntensityDay = JSONSettings["ParticleIntensityDay"];
-	ParticleIntensityNight = JSONSettings["ParticleIntensityNight"];
-	ParticleIntensityInterior = JSONSettings["ParticleIntensityInterior"];
+	OpacityDay = GetSettingFloat("OpacityDay");
+	OpacityNight = GetSettingFloat("OpacityNight");
+	OpacityInterior = GetSettingFloat("OpacityInterior");
 
-	FireIntensityDay = JSONSettings["FireIntensityDay"];
-	FireIntensityNight = JSONSettings["FireIntensityNight"];
-	FireIntensityInterior = JSONSettings["FireIntensityInterior"];
+	IntensityDay = GetSettingFloat("IntensityDay");
+	IntensityNight = GetSettingFloat("IntensityNight");
+	IntensityInterior = GetSettingFloat("IntensityInterior");
+
+	ParticleIntensityDay = GetSettingFloat("ParticleIntensityDay");
+	ParticleIntensityNight = GetSettingFloat("ParticleIntensityNight");
+	ParticleIntensityInterior = GetSettingFloat("ParticleIntensityInterior");
+
+	FireIntensityDay = GetSettingFloat("FireIntensityDay");
+	FireIntensityNight = GetSettingFloat("FireIntensityNight");
+	FireIntensityInterior = GetSettingFloat("FireIntensityInterior");
 }
 
 void EffectShaderSupport::SaveJSON()
 {
-	std::ofstream o(L"Data\\SKSE\\Plugins\\ENBEffectShaderSupport\\enbconfig.json");
-	JSONSettings["Enabled"] = Enabled;
+	std::lock_guard<std::shared_mutex> lk(fileLock);
+	CSimpleIniA                        ini;
+	ini.SetUnicode();
+	SetSettingFloat(OpacityDay, "OpacityDay");
+	SetSettingFloat(OpacityNight, "OpacityNight");
+	SetSettingFloat(OpacityInterior, "OpacityInterior");
 
-	JSONSettings["IntensityDay"] = IntensityDay;
-	JSONSettings["IntensityNight"] = IntensityNight;
-	JSONSettings["IntensityInterior"] = IntensityInterior;
+	SetSettingFloat(IntensityDay, "IntensityDay");
+	SetSettingFloat(IntensityNight, "IntensityNight");
+	SetSettingFloat(IntensityInterior, "IntensityInterior");
 
-	JSONSettings["OpacityDay"] = OpacityDay;
-	JSONSettings["OpacityNight"] = OpacityNight;
-	JSONSettings["OpacityInterior"] = OpacityInterior;
+	SetSettingFloat(ParticleIntensityDay, "ParticleIntensityDay");
+	SetSettingFloat(ParticleIntensityNight, "ParticleIntensityNight");
+	SetSettingFloat(ParticleIntensityInterior, "ParticleIntensityInterior");
 
-	JSONSettings["ParticleIntensityDay"] = ParticleIntensityDay;
-	JSONSettings["ParticleIntensityNight"] = ParticleIntensityNight;
-	JSONSettings["ParticleIntensityInterior"] = ParticleIntensityInterior;
+	SetSettingFloat(FireIntensityDay, "FireIntensityDay");
+	SetSettingFloat(FireIntensityNight, "FireIntensityNight");
+	SetSettingFloat(FireIntensityInterior, "FireIntensityInterior");
 
-	JSONSettings["FireIntensityDay"] = FireIntensityDay;
-	JSONSettings["FireIntensityNight"] = FireIntensityNight;
-	JSONSettings["FireIntensityInterior"] = FireIntensityInterior;
-
-	o << JSONSettings.dump(1);
+	ini.SaveFile(L"enbseries\\enbeffectshaders.ini");
 }
 
 //RE::NiColorA pow(RE::NiColorA a_color, float a_power)
